@@ -104,8 +104,7 @@ RUN cd /tmp && \
 RUN pip3 --no-cache-dir install \
     jupyter-console==6.0.0 \
     jupyterlab \
-    xgboost \
-    kubeflow-fairing==1.0.1
+
 
 # Create NB_USER user with UID=1000 and in the 'users' group
 # but allow for non-initial launches of the notebook to have
