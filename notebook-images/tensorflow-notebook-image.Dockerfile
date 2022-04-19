@@ -57,24 +57,24 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-ENV DOCKER_CREDENTIAL_GCR_VERSION=1.4.3
-RUN curl -LO https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v${DOCKER_CREDENTIAL_GCR_VERSION}/docker-credential-gcr_linux_amd64-${DOCKER_CREDENTIAL_GCR_VERSION}.tar.gz && \
-    tar -zxvf docker-credential-gcr_linux_amd64-${DOCKER_CREDENTIAL_GCR_VERSION}.tar.gz && \
-    mv docker-credential-gcr /usr/local/bin/docker-credential-gcr && \
-    rm docker-credential-gcr_linux_amd64-${DOCKER_CREDENTIAL_GCR_VERSION}.tar.gz && \
-    chmod +x /usr/local/bin/docker-credential-gcr
+#ENV DOCKER_CREDENTIAL_GCR_VERSION=1.4.3
+#RUN curl -LO https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v${DOCKER_CREDENTIAL_GCR_VERSION}/docker-credential-gcr_linux_amd64-${DOCKER_CREDENTIAL_GCR_VERSION}.tar.gz && \
+#    tar -zxvf docker-credential-gcr_linux_amd64-${DOCKER_CREDENTIAL_GCR_VERSION}.tar.gz && \
+#    mv docker-credential-gcr /usr/local/bin/docker-credential-gcr && \
+#    rm docker-credential-gcr_linux_amd64-${DOCKER_CREDENTIAL_GCR_VERSION}.tar.gz && \
+#    chmod +x /usr/local/bin/docker-credential-gcr
 
-# Install AWS CLI
-RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "/tmp/awscli-bundle.zip" && \
-    unzip /tmp/awscli-bundle.zip && ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws && \
-    rm -rf ./awscli-bundle
-
-# Install Azure CLI
-RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.asc.gpg > /dev/null && \
-    AZ_REPO=$(lsb_release -cs) && \
-    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list && \
-    apt-get update && \
-    apt-get install azure-cli
+## Install AWS CLI
+#RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "/tmp/awscli-bundle.zip" && \
+#    unzip /tmp/awscli-bundle.zip && ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws && \
+#    rm -rf ./awscli-bundle
+#
+## Install Azure CLI
+#RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.asc.gpg > /dev/null && \
+#    AZ_REPO=$(lsb_release -cs) && \
+#    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list && \
+#    apt-get update && \
+#    apt-get install azure-cli
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
@@ -83,11 +83,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
-    echo "deb https://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" > /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-    apt-get update && \
-    apt-get install -y google-cloud-sdk kubectl
+RUN apt-get install -y kubectl
 
 # Install Tini - used as entrypoint for container
 RUN cd /tmp && \
@@ -101,10 +97,12 @@ RUN cd /tmp && \
 # The image size can grow significantly.
 
 # Install base python3 packages
-RUN pip3 --no-cache-dir install \
-    jupyter-console==6.0.0 \
-    jupyterlab \
-
+RUN pip3 uninstall -y enum34
+RUN pip3 --no-cache-dir install jupyterlab==3.2.9 -i https://mirrors.aliyun.com/pypi/simple/
+RUN pip3 --no-cache-dir install jupyter-console -i https://mirrors.aliyun.com/pypi/simple/
+#RUN pip3 --no-cache-dir install xgboost
+#RUN pip3 --no-cache-dir install kubeflow-fairing -i https://mirrors.aliyun.com/pypi/simple/
+RUN pip3 install enum34 -i https://mirrors.aliyun.com/pypi/simple/
 
 # Create NB_USER user with UID=1000 and in the 'users' group
 # but allow for non-initial launches of the notebook to have
@@ -113,11 +111,11 @@ RUN useradd --shell /bin/bash --uid $NB_UID \
     --no-user-group --gid users \
     --create-home --home-dir $NB_HOME $NB_USER
 
-COPY --chown=jovyan:users requirements.txt /tmp
+#COPY --chown=jovyan:users requirements.txt /tmp
 
 USER jovyan
 
-RUN docker-credential-gcr configure-docker
+#RUN docker-credential-gcr configure-docker
 
 # Configure container startup
 EXPOSE 8888
