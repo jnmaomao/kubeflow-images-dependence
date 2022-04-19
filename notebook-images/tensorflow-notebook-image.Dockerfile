@@ -113,7 +113,7 @@ RUN useradd --shell /bin/bash --uid $NB_UID \
 
 #COPY --chown=jovyan:users requirements.txt /tmp
 RUN chmod 777 $NB_HOME
-USER jovyan
+USER root
 
 #RUN docker-credential-gcr configure-docker
 
