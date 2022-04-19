@@ -83,7 +83,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-RUN apt-get install -y kubectl
+#RUN apt-get install -y kubectl
 
 # Install Tini - used as entrypoint for container
 RUN cd /tmp && \
